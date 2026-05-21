@@ -3,95 +3,367 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Claude Agentic Query Agent</title>
+  <title>Meridian Supply Co. — Intelligence Platform</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg:        #0b0f1a;
+      --panel:     #111827;
+      --card:      #1a2236;
+      --border:    #1e2d45;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --accent:    #d97757;
+      --blue:      #3b82f6;
+      --green:     #22c55e;
+      --amber:     #f59e0b;
+      --red:       #ef4444;
+    }
+
+    html, body { height: 100%; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f1117;
-      color: #e2e8f0;
-      height: 100vh;
+      background: var(--bg);
+      color: var(--text);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
+    /* ── Header ── */
     header {
-      padding: 16px 24px;
-      border-bottom: 1px solid #1e2530;
+      height: 52px;
+      min-height: 52px;
+      padding: 0 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
+      flex-shrink: 0;
     }
 
-    header h1 { font-size: 16px; font-weight: 600; color: #f1f5f9; }
-    header p  { font-size: 12px; color: #64748b; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
 
-    .dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #22c55e;
+    .logo-mark {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, #d97757, #3b82f6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff;
+    }
+
+    .header-title { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+    .header-sub   { font-size: 11px; color: var(--muted); }
+
+    .header-right { display: flex; align-items: center; gap: 20px; }
+
+    .status-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: #0d2316;
+      border: 1px solid #166534;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--green);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .header-meta { font-size: 11px; color: var(--muted); }
+
+    /* ── Main layout ── */
+    .workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── Left dashboard panel ── */
+    .dashboard {
+      width: 420px;
+      min-width: 420px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .dash-header {
+      padding: 14px 20px 10px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .dash-header h2 { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .dash-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .dash-scroll::-webkit-scrollbar { width: 4px; }
+    .dash-scroll::-webkit-scrollbar-track { background: transparent; }
+    .dash-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* KPI cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      line-height: 1;
+    }
+    .kpi-value.green { color: var(--green); }
+    .kpi-value.amber { color: var(--amber); }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Section */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    /* Top customers */
+    .customer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .customer-row:last-child { border-bottom: none; }
+
+    .customer-rank {
+      width: 20px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .customer-info { flex: 1; min-width: 0; }
+    .customer-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .customer-seg {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .customer-spend { font-size: 13px; font-weight: 600; color: var(--green); flex-shrink: 0; }
+
+    .spend-bar-wrap { width: 60px; height: 4px; background: var(--border); border-radius: 4px; flex-shrink: 0; }
+    .spend-bar { height: 4px; background: var(--green); border-radius: 4px; }
+
+    /* Low stock */
+    .stock-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-name { font-size: 12px; color: #e2e8f0; }
+    .stock-cat  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .stock-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+    .stock-badge.critical { background: #2d1212; color: var(--red);   border: 1px solid #7f1d1d; }
+    .stock-badge.warning  { background: #2d200a; color: var(--amber); border: 1px solid #78350f; }
+    .stock-badge.low      { background: #1a2236; color: var(--muted); border: 1px solid var(--border); }
+
+    /* Recent orders */
+    .order-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .order-row:last-child { border-bottom: none; }
+    .order-main { flex: 1; min-width: 0; }
+    .order-customer { font-size: 12px; color: #e2e8f0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .order-product  { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .order-right { text-align: right; flex-shrink: 0; }
+    .order-total  { font-size: 12px; font-weight: 600; color: #f1f5f9; }
+    .order-date   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .status-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-top: 3px;
+    }
+    .status-tag.completed  { background: #0d2316; color: var(--green); }
+    .status-tag.pending    { background: #2d200a; color: var(--amber); }
+    .status-tag.processing { background: #1e1b40; color: #818cf8; }
+
+    /* ── Right: AI chat panel ── */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .chat-header {
+      padding: 14px 24px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .chat-header-left { display: flex; align-items: center; gap: 10px; }
+    .ai-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #d97757, #b45309);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+    }
+    .chat-header h2 { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+    .chat-header p  { font-size: 11px; color: var(--muted); }
+    .model-tag {
+      font-size: 10px;
+      color: var(--accent);
+      background: #1f150e;
+      border: 1px solid #7c3821;
+      padding: 3px 8px;
+      border-radius: 20px;
     }
 
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 24px;
+      padding: 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    .msg { display: flex; gap: 12px; max-width: 820px; width: 100%; }
+    #empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--muted);
+      padding: 40px 24px;
+    }
+    #empty-state .empty-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+    #empty-state h2 { font-size: 16px; color: #64748b; font-weight: 500; }
+    #empty-state p  { font-size: 12px; text-align: center; max-width: 260px; line-height: 1.6; }
+
+    .msg { display: flex; gap: 10px; max-width: 100%; width: 100%; }
     .msg.user { align-self: flex-end; flex-direction: row-reverse; }
 
     .avatar {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 28px; height: 28px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 600; flex-shrink: 0;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
     }
-    .msg.user   .avatar { background: #3b82f6; color: #fff; }
-    .msg.agent  .avatar { background: #d97757; color: #fff; }
+    .msg.user  .avatar { background: var(--blue);   color: #fff; }
+    .msg.agent .avatar { background: var(--accent);  color: #fff; }
 
     .bubble {
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 14px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
       line-height: 1.6;
-      max-width: 680px;
+      max-width: calc(100% - 50px);
     }
-    .msg.user  .bubble { background: #1e3a5f; color: #e2e8f0; border-radius: 12px 4px 12px 12px; }
-    .msg.agent .bubble { background: #1a1f2e; color: #e2e8f0; border-radius: 4px 12px 12px 12px; }
+    .msg.user  .bubble { background: #1e3a5f; color: var(--text); border-radius: 10px 3px 10px 10px; }
+    .msg.agent .bubble { background: var(--card); color: var(--text); border-radius: 3px 10px 10px 10px; border: 1px solid var(--border); }
 
-    .bubble h1, .bubble h2, .bubble h3 { margin: 12px 0 6px; color: #f1f5f9; }
-    .bubble h1 { font-size: 16px; }
-    .bubble h2 { font-size: 15px; }
-    .bubble h3 { font-size: 14px; }
-    .bubble p  { margin-bottom: 8px; }
-    .bubble ul, .bubble ol { padding-left: 20px; margin-bottom: 8px; }
-    .bubble li { margin-bottom: 4px; }
+    .bubble h1, .bubble h2, .bubble h3 { margin: 10px 0 4px; color: #f1f5f9; }
+    .bubble h1 { font-size: 15px; }
+    .bubble h2 { font-size: 14px; }
+    .bubble h3 { font-size: 13px; }
+    .bubble p  { margin-bottom: 6px; }
+    .bubble p:last-child { margin-bottom: 0; }
+    .bubble ul, .bubble ol { padding-left: 18px; margin-bottom: 6px; }
+    .bubble li { margin-bottom: 3px; }
     .bubble strong { color: #f1f5f9; }
     .bubble code {
-      background: #0f1117; padding: 2px 6px;
-      border-radius: 4px; font-family: monospace; font-size: 12px;
+      background: #0b0f1a; padding: 1px 5px;
+      border-radius: 3px; font-family: monospace; font-size: 11px;
     }
 
     .tool-indicator {
-      display: flex; align-items: center; gap-6px;
-      font-size: 11px; color: #64748b;
-      padding: 4px 0;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--muted);
+      padding: 3px 0;
     }
     .tool-indicator::before {
       content: "⚙";
-      margin-right: 6px;
-      color: #d97757;
+      font-size: 12px;
+      color: var(--accent);
     }
 
-    .thinking {
-      display: flex; gap: 4px; padding: 12px 0;
-    }
+    .thinking { display: flex; gap: 4px; padding: 8px 0; }
     .thinking span {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #64748b;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--muted);
       animation: pulse 1.2s infinite;
     }
     .thinking span:nth-child(2) { animation-delay: 0.2s; }
@@ -101,135 +373,347 @@
       40%            { opacity: 1;   transform: scale(1); }
     }
 
+    .suggestions {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 0 24px 12px;
+    }
+    .suggestion {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .suggestion:hover { border-color: var(--blue); color: var(--text); }
+
     #input-area {
-      padding: 16px 24px;
-      border-top: 1px solid #1e2530;
+      padding: 12px 24px 16px;
+      border-top: 1px solid var(--border);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-end;
+      flex-shrink: 0;
     }
 
     #input {
       flex: 1;
-      background: #1a1f2e;
-      border: 1px solid #2d3748;
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: #e2e8f0;
-      font-size: 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 13px;
       resize: none;
       outline: none;
-      min-height: 48px;
-      max-height: 140px;
+      min-height: 42px;
+      max-height: 120px;
       font-family: inherit;
       line-height: 1.5;
       transition: border-color 0.15s;
     }
-    #input:focus { border-color: #3b82f6; }
-    #input::placeholder { color: #4a5568; }
+    #input:focus { border-color: var(--blue); }
+    #input::placeholder { color: #334155; }
 
     #send {
-      background: #3b82f6;
-      border: none; border-radius: 10px;
-      width: 48px; height: 48px;
+      background: var(--blue);
+      border: none; border-radius: 8px;
+      width: 42px; height: 42px;
       color: #fff; cursor: pointer;
-      font-size: 18px;
+      font-size: 15px;
       display: flex; align-items: center; justify-content: center;
       transition: background 0.15s;
       flex-shrink: 0;
     }
     #send:hover    { background: #2563eb; }
-    #send:disabled { background: #2d3748; cursor: not-allowed; }
+    #send:disabled { background: var(--border); cursor: not-allowed; }
 
-    .suggestions {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      padding: 0 24px 16px;
+    /* Skeleton loader */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, #253045 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
     }
-    .suggestion {
-      background: #1a1f2e;
-      border: 1px solid #2d3748;
-      border-radius: 20px;
-      padding: 6px 14px;
-      font-size: 12px;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.15s;
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
-    .suggestion:hover { border-color: #3b82f6; color: #e2e8f0; }
-
-    #empty-state {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      color: #4a5568;
-    }
-    #empty-state h2 { font-size: 20px; color: #64748b; font-weight: 500; }
-    #empty-state p  { font-size: 13px; }
+    .skeleton-text { height: 14px; margin-bottom: 6px; }
+    .skeleton-text.short { width: 60%; }
+    .skeleton-kpi { height: 28px; margin-bottom: 6px; }
   </style>
 </head>
 <body>
 
+<!-- ── Header ── -->
 <header>
-  <div class="dot"></div>
-  <div>
-    <h1>Claude Agentic Query Agent</h1>
-    <p>Powered by Claude claude-sonnet-4-6 · Meridian Supply Co. demo data</p>
+  <div class="header-left">
+    <div class="logo-mark">M</div>
+    <div>
+      <div class="header-title">Meridian Supply Co.</div>
+      <div class="header-sub">Business Intelligence Platform</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Live Data
+    </div>
+    <div class="header-meta" id="last-refresh">Loading...</div>
   </div>
 </header>
 
-<div id="empty-state">
-  <h2>Ask anything about the business</h2>
-  <p>Claude will autonomously query the database to answer you.</p>
-</div>
+<!-- ── Workspace ── -->
+<div class="workspace">
 
-<div id="messages" style="display:none"></div>
+  <!-- Left: Dashboard -->
+  <div class="dashboard">
+    <div class="dash-header">
+      <h2>Overview</h2>
+    </div>
+    <div class="dash-scroll">
 
-<div class="suggestions">
-  <div class="suggestion" onclick="ask(this.textContent)">Who are our top 5 customers?</div>
-  <div class="suggestion" onclick="ask(this.textContent)">What's our total revenue this year?</div>
-  <div class="suggestion" onclick="ask(this.textContent)">Which products are running low on stock?</div>
-  <div class="suggestion" onclick="ask(this.textContent)">Show me all pending orders</div>
-  <div class="suggestion" onclick="ask(this.textContent)">Which product category drives the most revenue?</div>
-</div>
+      <!-- KPIs -->
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Total Revenue</div><div class="skeleton skeleton-kpi"></div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Orders</div><div class="skeleton skeleton-kpi"></div></div>
+        <div class="kpi-card"><div class="kpi-label">Pending Value</div><div class="skeleton skeleton-kpi"></div></div>
+        <div class="kpi-card"><div class="kpi-label">Pending Orders</div><div class="skeleton skeleton-kpi"></div></div>
+      </div>
 
-<div id="input-area">
-  <textarea id="input" placeholder="Ask a question about customers, orders, revenue, or inventory..." rows="1"></textarea>
-  <button id="send" onclick="sendMessage()">&#9650;</button>
+      <!-- Top Customers -->
+      <div>
+        <div class="section-title">Top Customers by Revenue</div>
+        <div id="top-customers">
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text short"></div>
+        </div>
+      </div>
+
+      <!-- Low Stock -->
+      <div>
+        <div class="section-title">Inventory Alerts</div>
+        <div id="low-stock">
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text short"></div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div>
+        <div class="section-title">Recent Orders</div>
+        <div id="recent-orders">
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text short"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right: AI Chat -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="ai-icon">AI</div>
+        <div>
+          <h2>AI Assistant</h2>
+          <p>Ask anything — Claude queries the database autonomously</p>
+        </div>
+      </div>
+      <div class="model-tag">Claude Sonnet 4.6</div>
+    </div>
+
+    <div id="empty-state">
+      <div class="empty-icon">◎</div>
+      <h2>Ask a business question</h2>
+      <p>Claude will call the relevant data tools, reason over the results, and give you a cited answer.</p>
+    </div>
+
+    <div id="messages" style="display:none"></div>
+
+    <div class="suggestions">
+      <div class="suggestion" onclick="ask(this.textContent)">Who are our top 5 customers?</div>
+      <div class="suggestion" onclick="ask(this.textContent)">What's our total revenue this year?</div>
+      <div class="suggestion" onclick="ask(this.textContent)">Which products are running low?</div>
+      <div class="suggestion" onclick="ask(this.textContent)">Show me all pending orders</div>
+      <div class="suggestion" onclick="ask(this.textContent)">Which category drives the most revenue?</div>
+    </div>
+
+    <div id="input-area">
+      <textarea id="input" placeholder="Ask about customers, orders, revenue, inventory..." rows="1"></textarea>
+      <button id="send" onclick="sendMessage()">&#9650;</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
-  const messagesEl  = document.getElementById("messages");
-  const emptyState  = document.getElementById("empty-state");
-  const inputEl     = document.getElementById("input");
-  const sendBtn     = document.getElementById("send");
+  // ── Dashboard data ──────────────────────────────────────────────────
+  async function loadDashboard() {
+    try {
+      const res  = await fetch("/api/dashboard");
+      if (!res.ok) throw new Error("no backend");
+      const data = await res.json();
+      renderKPIs(data);
+      renderTopCustomers(data.top_customers);
+      renderLowStock(data.low_stock);
+      renderRecentOrders(data.recent_orders);
+      document.getElementById("last-refresh").textContent =
+        "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    } catch {
+      renderStaticFallback();
+    }
+  }
+
+  function fmt(n) {
+    if (n == null) return "—";
+    return "$" + Number(n).toLocaleString("en-US", {maximumFractionDigits: 0});
+  }
+
+  function renderKPIs(d) {
+    document.getElementById("kpi-grid").innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value green">${fmt(d.revenue.total)}</div>
+        <div class="kpi-sub">All time</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Orders</div>
+        <div class="kpi-value">${d.revenue.orders}</div>
+        <div class="kpi-sub">Across all statuses</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pending Value</div>
+        <div class="kpi-value amber">${fmt(d.pending.value)}</div>
+        <div class="kpi-sub">Awaiting fulfillment</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pending Orders</div>
+        <div class="kpi-value amber">${d.pending.count}</div>
+        <div class="kpi-sub">Open orders</div>
+      </div>
+    `;
+  }
+
+  function renderTopCustomers(customers) {
+    const max = customers[0]?.spend || 1;
+    document.getElementById("top-customers").innerHTML = customers.map((c, i) => `
+      <div class="customer-row">
+        <div class="customer-rank">${i + 1}</div>
+        <div class="customer-info">
+          <div class="customer-name">${c.name}</div>
+          <div class="customer-seg">${c.segment}</div>
+        </div>
+        <div class="spend-bar-wrap">
+          <div class="spend-bar" style="width:${Math.round((c.spend/max)*100)}%"></div>
+        </div>
+        <div class="customer-spend">${fmt(c.spend)}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderLowStock(items) {
+    if (!items.length) {
+      document.getElementById("low-stock").innerHTML = `<div style="font-size:12px;color:var(--green);padding:8px 0">All products adequately stocked</div>`;
+      return;
+    }
+    document.getElementById("low-stock").innerHTML = items.map(p => {
+      const cls = p.stock < 10 ? "critical" : p.stock < 15 ? "warning" : "low";
+      return `
+        <div class="stock-row">
+          <div>
+            <div class="stock-name">${p.name}</div>
+            <div class="stock-cat">${p.category}</div>
+          </div>
+          <span class="stock-badge ${cls}">${p.stock} left</span>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderRecentOrders(orders) {
+    document.getElementById("recent-orders").innerHTML = orders.map(o => `
+      <div class="order-row">
+        <div class="order-main">
+          <div class="order-customer">${o.customer}</div>
+          <div class="order-product">${o.product}</div>
+        </div>
+        <div class="order-right">
+          <div class="order-total">${fmt(o.total)}</div>
+          <div class="order-date">${o.order_date}</div>
+          <span class="status-tag ${o.status}">${o.status}</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderStaticFallback() {
+    // Shown when backend isn't running — uses known seed data
+    renderKPIs({
+      revenue: { total: 123671, orders: 20 },
+      pending: { value: 19697, count: 3 }
+    });
+    renderTopCustomers([
+      { name:"Crest Industrial",    segment:"Enterprise",  spend:28189 },
+      { name:"BlueRidge Logistics", segment:"Mid-Market",  spend:18195 },
+      { name:"Global Parts Inc",    segment:"Enterprise",  spend:16800 },
+      { name:"Delta Fabricators",   segment:"SMB",         spend:14477 },
+      { name:"Apex Manufacturing",  segment:"Enterprise",  spend:13972 },
+    ]);
+    renderLowStock([
+      { name:"Network Switch 24-Port", category:"Networking", stock:8  },
+      { name:"RFID Reader Pro",        category:"Hardware",   stock:12 },
+      { name:"Gateway Controller Unit",category:"Hardware",   stock:23 },
+    ]);
+    renderRecentOrders([
+      { customer:"Apex Manufacturing",   product:"Gateway Controller Unit", status:"processing", total:3798,  order_date:"2026-04-22" },
+      { customer:"Harbor Industries",    product:"Network Switch 24-Port",  status:"processing", total:1250,  order_date:"2026-04-20" },
+      { customer:"Frontier Equipment",   product:"Integration Software",    status:"pending",    total:9000,  order_date:"2026-04-18" },
+      { customer:"Delta Fabricators",    product:"Industrial Sensor Array", status:"pending",    total:7497,  order_date:"2026-04-15" },
+      { customer:"BlueRidge Logistics",  product:"RFID Reader Pro",         status:"pending",    total:3200,  order_date:"2026-04-10" },
+      { customer:"Crest Industrial",     product:"Data Logger Module",      status:"completed",  total:7192,  order_date:"2026-04-05" },
+      { customer:"Global Parts Inc",     product:"Calibration Service Pack",status:"completed",  total:4000,  order_date:"2026-04-01" },
+      { customer:"Crest Industrial",     product:"Industrial Sensor Array", status:"completed",  total:7497,  order_date:"2026-03-05" },
+    ]);
+    document.getElementById("last-refresh").textContent = "Demo data";
+  }
+
+  loadDashboard();
+
+  // ── Chat ────────────────────────────────────────────────────────────
+  const messagesEl = document.getElementById("messages");
+  const emptyState = document.getElementById("empty-state");
+  const inputEl    = document.getElementById("input");
+  const sendBtn    = document.getElementById("send");
 
   let history = [];
 
-  function ask(text) {
-    inputEl.value = text;
-    sendMessage();
-  }
+  function ask(text) { inputEl.value = text; sendMessage(); }
 
   inputEl.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
   inputEl.addEventListener("input", () => {
     inputEl.style.height = "auto";
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
   });
 
-  function appendMessage(role, content) {
+  function showMessages() {
     if (emptyState.style.display !== "none") {
       emptyState.style.display = "none";
       messagesEl.style.display = "flex";
     }
+  }
+
+  function appendMessage(role, content) {
+    showMessages();
     const msg = document.createElement("div");
     msg.className = `msg ${role}`;
     msg.innerHTML = `
@@ -257,9 +741,9 @@
       .replace(/`([^`]+)`/g,    "<code>$1</code>")
       .replace(/^\* (.+)$/gm,   "<li>$1</li>")
       .replace(/^- (.+)$/gm,    "<li>$1</li>")
-      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+      .replace(/(<li>[\s\S]*?<\/li>(\n|$))+/g, m => `<ul>${m}</ul>`)
       .replace(/\n\n/g, "</p><p>")
-      .replace(/^(?!<[hul])(.+)$/gm, "<p>$1</p>");
+      .replace(/^(?!<[hulo])(.+)$/gm, "<p>$1</p>");
   }
 
   async function sendMessage() {
@@ -271,10 +755,9 @@
     inputEl.style.height = "auto";
 
     appendMessage("user", text);
-
     const agentBubble = appendMessage("agent", '<div class="thinking"><span></span><span></span><span></span></div>');
     let responseText  = "";
-    let thinkingRemoved = false;
+    let thinkingDone  = false;
 
     try {
       const res = await fetch("/chat/stream", {
@@ -283,34 +766,25 @@
         body: JSON.stringify({ message: text, history }),
       });
 
-      const reader = res.body.getReader();
+      const reader  = res.body.getReader();
       const decoder = new TextDecoder();
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n").filter(l => l.startsWith("data: "));
-
+        const lines = decoder.decode(value).split("\n").filter(l => l.startsWith("data: "));
         for (const line of lines) {
           const payload = JSON.parse(line.slice(6));
 
           if (payload.type === "tool_call") {
-            if (!thinkingRemoved) {
-              agentBubble.innerHTML = "";
-              thinkingRemoved = true;
-            }
+            if (!thinkingDone) { agentBubble.innerHTML = ""; thinkingDone = true; }
             addToolIndicator(agentBubble, payload.tool);
           }
 
           if (payload.type === "text") {
-            if (!thinkingRemoved) {
-              agentBubble.innerHTML = "";
-              thinkingRemoved = true;
-            }
+            if (!thinkingDone) { agentBubble.innerHTML = ""; thinkingDone = true; }
             responseText += payload.content;
-            // Clear tool indicators, show final answer
             agentBubble.innerHTML = renderMarkdown(responseText);
           }
 
@@ -323,7 +797,7 @@
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
     } catch (err) {
-      agentBubble.innerHTML = `<span style="color:#ef4444">Error: ${err.message}</span>`;
+      agentBubble.innerHTML = `<span style="color:var(--red)">Error: ${err.message}</span>`;
     }
 
     sendBtn.disabled = false;
