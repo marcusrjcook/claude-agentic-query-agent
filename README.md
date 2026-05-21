@@ -1,27 +1,22 @@
 # Claude Agentic Query Agent
 
-A production-ready agentic AI demo that lets business users query a live database in plain English. Claude Sonnet autonomously decides which tools to call, executes multi-round reasoning, and streams a data-driven answer back to the user — no SQL required.
+![python](https://img.shields.io/badge/Python-3.11+-3b82f6) ![claude](https://img.shields.io/badge/Claude-Sonnet%204.6-d97757) ![status](https://img.shields.io/badge/status-live%20demo-22c55e)
 
-![screenshot](https://img.shields.io/badge/status-live%20demo-22c55e) ![python](https://img.shields.io/badge/Python-3.11+-3b82f6) ![claude](https://img.shields.io/badge/Claude-Sonnet%204.6-d97757)
+Built this to explore what it actually looks like when you give an LLM real database access and let it figure out the rest. You type a plain English question, Claude decides which tools to call, pulls the data, and streams back a real answer — no hand-holding, no pre-written queries.
 
-## What It Does
+The demo runs against a fictional B2B distributor called Meridian Supply Co. Ask it something like *"which product category is driving the most revenue?"* and watch it chain multiple tool calls together to get there.
 
-Ask a question like *"Which product category drives the most revenue?"* and the agent will:
+## How it works
 
-1. Determine which database tools are needed
-2. Call them autonomously — in sequence or parallel rounds
-3. Reason over the results
-4. Return a formatted, cited answer streamed token-by-token
+Claude gets a set of named tools — things like `get_top_customers` or `get_revenue_by_category`. When you ask a question, it figures out which ones it needs, calls them (sometimes across multiple rounds if the question is complex), reasons over what came back, and returns a formatted answer. The whole thing streams via SSE so you see tool calls firing in real time before the response arrives.
 
-The agent can chain up to 5 tool-call rounds before forcing a final answer, handling questions that require joining multiple data sources (e.g., customers + orders + products).
-
-## Architecture
+The loop caps at 5 rounds to prevent runaway calls, and the system prompt is cached so repeated queries don't re-process it every time.
 
 ```
 User ──► FastAPI /chat/stream ──► Agentic Loop (Claude Sonnet 4.6)
                                        │
                           ┌────────────┴──────────────┐
-                          │   Tool Definitions (6)     │
+                          │        Tools (6)           │
                           │   ├── get_revenue_summary  │
                           │   ├── get_top_customers    │
                           │   ├── get_orders           │
@@ -34,105 +29,72 @@ User ──► FastAPI /chat/stream ──► Agentic Loop (Claude Sonnet 4.6)
                               (Meridian Supply Co.)
 ```
 
-**Streaming:** Server-Sent Events (SSE) deliver tool-call indicators, partial text, and completion signals to the frontend in real time.
+## Stack
 
-**Prompt caching:** The system prompt is cached with `cache_control: ephemeral`, cutting token costs on repeated queries.
-
-## Tech Stack
-
-| Layer | Technology |
+| Layer | Tech |
 |---|---|
-| AI | Anthropic Claude Sonnet 4.6, Tool Use API |
-| Backend | Python 3.11, FastAPI, Uvicorn |
-| Streaming | Server-Sent Events (SSE) |
-| Database | SQLite (drop-in; swap for Postgres/MSSQL) |
-| Frontend | Vanilla JS, dark-theme chat UI |
-| Config | python-dotenv |
+| AI | Claude Sonnet 4.6 — Tool Use API |
+| Backend | Python, FastAPI, Uvicorn |
+| Streaming | Server-Sent Events |
+| Database | SQLite (easy to swap for Postgres or MSSQL) |
+| Frontend | Vanilla JS — split dashboard + chat layout |
 
-## Project Structure
+## Project layout
 
 ```
 claude-agentic-query-agent/
 ├── backend/
-│   ├── agent.py        # Agentic loop — SSE streaming, multi-round tool use
-│   ├── tools.py        # Tool definitions + parameterized SQL handlers
-│   ├── database.py     # SQLite init + Meridian Supply Co. seed data
-│   └── main.py         # FastAPI app — /chat/stream endpoint
+│   ├── agent.py        # the agentic loop — SSE streaming, multi-round tool use
+│   ├── tools.py        # tool definitions + parameterized SQL handlers
+│   ├── database.py     # SQLite init + seed data
+│   └── main.py         # FastAPI — /chat/stream + /api/dashboard
 ├── frontend/
-│   └── index.html      # Single-file dark chat UI
+│   └── index.html      # dashboard left, AI chat right
 ├── .env.example
 ├── requirements.txt
 └── README.md
 ```
 
-## Quick Start
+## Running it locally
 
 ```bash
-# 1. Clone and install
 git clone https://github.com/marcusjco/claude-agentic-query-agent.git
 cd claude-agentic-query-agent
 pip install -r requirements.txt
 
-# 2. Add your API key
 cp .env.example .env
-# edit .env → ANTHROPIC_API_KEY=sk-ant-...
+# add your Anthropic API key to .env
 
-# 3. Run
 cd backend
 uvicorn main:app --reload
-
-# 4. Open http://localhost:8000
 ```
 
-The SQLite database is created and seeded automatically on first run. No migrations needed.
+Open `http://localhost:8000`. The database seeds itself on first run.
 
-## Demo Dataset — Meridian Supply Co.
+## The demo dataset
 
-Fictional B2B industrial equipment distributor with 8 customers, 10 products across 5 categories, and 20 orders spanning Jan–Apr 2026. Enough variety to demonstrate multi-tool reasoning.
+Meridian Supply Co. is a made-up B2B industrial equipment distributor — 8 customers, 10 products across 5 categories, 20 orders from Jan–Apr 2026. Small enough to be readable, varied enough to make multi-tool questions interesting.
 
-**Try these questions:**
+Things worth trying:
 - Who are our top 5 customers by spend?
 - What's our total revenue this year?
 - Which products are running low on stock?
 - Show me all pending orders
 - Which product category drives the most revenue?
 
-## Key Implementation Details
+## A couple things I was intentional about
 
-### Agentic Loop (`backend/agent.py`)
+**Claude never touches raw SQL.** Every tool is a named Python function with typed parameters. Claude calls `get_top_customers(limit=5, segment="Enterprise")` — it has no idea what the query looks like underneath. Keeps injection impossible and the query logic in one place.
 
-The loop runs up to 5 rounds. Each round:
-- Sends the full message history + available tools to Claude
-- Yields SSE events for any tool calls (`tool_call`) and their results (`tool_result`)
-- If Claude returns `end_turn` with no tool calls, yields the final `text` and exits
-- Otherwise appends assistant + tool result messages and loops
+**The agentic loop is explicit.** No framework magic. It's a plain for-loop in `agent.py` — send message, check for tool calls, execute them, append results, repeat. Easy to read, easy to modify.
 
-```python
-for _round in range(5):
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        tools=TOOL_DEFINITIONS,
-        messages=messages,
-    )
-    # ... stream tool calls → execute → append → repeat
-    if not tool_uses or response.stop_reason == "end_turn":
-        break
-```
+**Swapping the database is one function.** Change `get_connection()` in `database.py` and point it at Postgres, MSSQL, whatever — the rest doesn't care.
 
-### Tool Design (`backend/tools.py`)
+## Extending it
 
-Claude never writes raw SQL. Each tool is a named, parameterized Python function. This gives Claude a typed interface while keeping SQL injection impossible and query logic centralized.
-
-### Swap the Database
-
-Replace SQLite with any backend by changing `get_connection()` in `database.py`. The tool handlers are pure Python — no ORM coupling.
-
-## Extending This
-
-- **Add a tool:** Add an entry to `TOOL_DEFINITIONS` and a handler in `tools.py`. Claude discovers it automatically.
-- **Connect real data:** Update `get_connection()` to point at your Postgres, MSSQL, or MySQL instance.
-- **Add auth:** Drop an API key middleware into `main.py`.
-- **Swap the model:** Change `model="claude-sonnet-4-6"` in `agent.py` to any Claude model.
+- Add a tool: new entry in `TOOL_DEFINITIONS` + a handler function in `tools.py`. Claude picks it up automatically on the next request.
+- Connect real data: update `get_connection()` in `database.py`.
+- Different model: one line change in `agent.py`.
 
 ## License
 
