@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: claude-agentic-query-agent
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port 
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
