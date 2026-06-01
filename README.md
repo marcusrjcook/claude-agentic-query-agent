@@ -1,6 +1,8 @@
 # Claude Agentic Query Agent
 
-![python](https://img.shields.io/badge/Python-3.11+-3b82f6) ![claude](https://img.shields.io/badge/Claude-Sonnet%204.6-d97757) ![status](https://img.shields.io/badge/status-live%20demo-22c55e)
+![python](https://img.shields.io/badge/Python-3.11+-3b82f6) ![claude](https://img.shields.io/badge/Claude-Sonnet%204.6-d97757) [![Live Demo](https://img.shields.io/badge/live%20demo-render-46E3B7?logo=render&logoColor=white)](https://claude-agentic-query-agent.onrender.com)
+
+**[Live Demo](https://claude-agentic-query-agent.onrender.com)** — free tier, first load after idle takes ~30 seconds
 
 Built this to explore what it actually looks like when you give an LLM real database access and let it figure out the rest. You type a plain English question, Claude decides which tools to call, pulls the data, and streams back a real answer — no hand-holding, no pre-written queries.
 
