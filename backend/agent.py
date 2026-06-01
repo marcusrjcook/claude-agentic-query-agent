@@ -42,6 +42,15 @@ def get_client() -> anthropic.Anthropic:
     return _client
 
 
+def _safe_history(history: list[dict], limit: int = 10) -> list[dict]:
+    """Trim history without splitting a tool_use/tool_result pair."""
+    trimmed = history[-limit:]
+    # if the first message is a tool_result, drop it — it has no matching tool_use
+    while trimmed and trimmed[0]["role"] == "user" and isinstance(trimmed[0]["content"], list):
+        trimmed = trimmed[1:]
+    return trimmed
+
+
 def run_agent(message: str, history: list[dict]) -> Generator[str, None, None]:
     """
     Agentic loop — yields SSE strings.
@@ -49,7 +58,7 @@ def run_agent(message: str, history: list[dict]) -> Generator[str, None, None]:
     """
     client = get_client()
 
-    messages = history[-10:] + [{"role": "user", "content": message}]
+    messages = _safe_history(history) + [{"role": "user", "content": message}]
 
     for _round in range(5):
         response = client.messages.create(
@@ -82,7 +91,10 @@ def run_agent(message: str, history: list[dict]) -> Generator[str, None, None]:
         # Execute tools and collect results
         tool_results = []
         for tool in tool_uses:
-            result = handle_tool(tool.name, tool.input)
+            try:
+                result = handle_tool(tool.name, tool.input)
+            except Exception as e:
+                result = json.dumps({"error": f"Tool {tool.name} failed: {str(e)}"})
             yield f"data: {json.dumps({'type': 'tool_result', 'tool': tool.name})}\n\n"
             tool_results.append({
                 "type": "tool_result",
