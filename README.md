@@ -60,7 +60,7 @@ claude-agentic-query-agent/
 ## Running it locally
 
 ```bash
-git clone https://github.com/marcusjco/claude-agentic-query-agent.git
+git clone https://github.com/marcusrjcook/claude-agentic-query-agent.git
 cd claude-agentic-query-agent
 pip install -r requirements.txt
 
